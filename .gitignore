@@ -1,0 +1,30 @@
+# Reports y Screenshots (opcional)
+Reports/
+Screenshots/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Packages
+*.nupkg
+packages/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# Build folders
+bin/
+obj/
+
+# User files
+*.user
