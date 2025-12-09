@@ -68,9 +68,9 @@ namespace selenium_tineda_csharp.Test
         }
 
 
-       [Test]
-    [Category("Smoke")]
-    [Description("Verifica que el login con campos vacíos falle correctamente")]
+        [Test]
+        [Category("Smoke")]
+        [Description("Verifica que el login con campos vacíos falle correctamente")]
     public void Test_LoginConCamposVacios_Fallido()
     {
         var loginPage = new LoginPage(Driver);

@@ -99,20 +99,51 @@ public void Test_AgregarVariosProductos_AlCarrito()
 
         [Test]
         [Category("Functional")]
-        [Description("Eliminar un productos al carrito")]
-        public void Test_EliminarProductos_DelCarrito()
+        [Description("Eliminar un producto del carrito")]
+        public void Test_EliminarProducto_DelCarrito()
         {
-            var home = new HomePage(Driver);
-            var product = new ProductPage(Driver);
-            var cart = new CartPage(Driver);
+        var home = new HomePage(Driver);
+        var product = new ProductPage(Driver);
+        var cart = new CartPage(Driver);
 
-        // Ir a la página principal
-        LogInfo("Navegando a Home");
-        home.GoToHomePage();
-        // este nomas es tomar el de arriba y previo al final hacer un click() 
-        // para eliminar una de las dos playeras agregadas.
-        
+        LogInfo("Navegando a la tienda");
+        home.GoToHomePage("https://teststore.automationtesting.co.uk/index.php");
+
+        LogInfo("Seleccionando primer producto");
+        home.ClickFirstProduct();
+        Assert.That(Driver.Url, Does.Contain("id_product"));
+
+        LogInfo("Agregando producto al carrito");
+        product.SelectSize("S");
+        product.AddToCart();
+    
+        Assert.That(product.IsSuccessModalDisplayed(), Is.True);
+    
+        LogInfo("Yendo al carrito");
+        product.ProceedToCheckout();
+
+        LogInfo("Verificando que el carrito tiene items");
+        Assert.That(cart.HasItems(), Is.True);
+        int itemsAntes = cart.GetItemCount();
+
+        LogInfo("Eliminando producto del carrito");
+        cart.DeleteFirstItem();
+
+        LogInfo("Verificando que el producto fue eliminado");
+        int itemsDespues = cart.GetItemCount();
+    
+        Assert.That(itemsDespues, Is.LessThan(itemsAntes), 
+            "La cantidad de items debe haber disminuido");
+
+        if (itemsAntes == 1)
+        {
+            Assert.That(cart.IsCartEmpty(), Is.True, 
+                "El carrito debe estar vacío");
         }
+
+        LogPass("Producto eliminado exitosamente del carrito");
+}
+
 
 
 

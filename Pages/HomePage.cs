@@ -33,5 +33,12 @@ namespace selenium_tineda_csharp.Pages
         {
             Click(_homeLink);
         }
+
+        public void ClickFirstProduct()
+        {
+            ClickProductByIndex(0);
+        }
+
+
     }
 }
