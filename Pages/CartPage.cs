@@ -1,4 +1,5 @@
 using OpenQA.Selenium;
+using SeleniumExtras.WaitHelpers;
 using System;
 
 namespace selenium_tineda_csharp.Pages
@@ -39,33 +40,32 @@ namespace selenium_tineda_csharp.Pages
 
         public void DeleteFirstItem()
         {
-            try
+            int countBefore = GetItemCount();
+            
+            var deleteBtn = FindElement(_deleteButton);
+            deleteBtn.Click();
+            
+            // ✅ Esperar que la cantidad disminuya o el carrito esté vacío
+            Wait.Until(driver => 
             {
-                var deleteBtn = FindElement(_deleteButton);
-                deleteBtn.Click();
-                System.Threading.Thread.Sleep(2000); // Esperar que se elimine
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"No se pudo eliminar el producto: {ex.Message}");
-            }
+                int countAfter = GetItemCount();
+                return countAfter < countBefore || IsCartEmpty();
+            });
         }
 
         public bool IsCartEmpty()
         {
             try
             {
-                // Verificar si no hay items
                 var items = Driver.FindElements(_cartItems);
                 if (items.Count == 0)
                     return true;
 
-                // O si aparece mensaje de carrito vacío
                 return IsElementDisplayed(_emptyCartMessage, 3);
             }
             catch
             {
-                return true; // Si hay error, asumimos que está vacío
+                return true;
             }
         }
     }
