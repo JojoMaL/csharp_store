@@ -48,6 +48,7 @@ namespace selenium_tineda_csharp.Pages
             try
             {
                 var emailField = Driver.FindElement(By.Id("field-email"));
+                // ✅ Actualizado a GetDomAttribute (required es un atributo HTML)
                 var isRequired = emailField.GetDomAttribute("required") != null;
                 return isRequired;
             }
