@@ -104,11 +104,6 @@ Los reportes HTML se generan automáticamente en la carpeta `Reports/`.
 # Abrir último reporte (Mac)
 open "$(find bin/Debug/net8.0/Reports -name '*.html' | sort | tail -1)"
 ```
-
-## 📄 Licencia
-
-MIT License
-
 ## ✉️ Contacto
 
 Jose Mantecon Luengas  - mantecon_95@hotmail.com
