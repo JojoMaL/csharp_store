@@ -18,22 +18,6 @@ Framework de automatización web con Selenium, C# y NUnit con Page Object Model.
 - Visual Studio Code
 - Google Chrome
 
-## 🔧 Instalación
-
-1. Clonar el repositorio:
-```bash
-git clone https://github.com/tu-usuario/selenium-csharp-framework.git
-cd selenium-csharp-framework
-```
-
-2. Restaurar dependencias:
-```bash
-dotnet restore
-```
-
-3. Compilar:
-```bash
-dotnet build
 ```
 
 ## 🏗️ Estructura del Proyecto
@@ -120,14 +104,6 @@ Los reportes HTML se generan automáticamente en la carpeta `Reports/`.
 # Abrir último reporte (Mac)
 open "$(find bin/Debug/net8.0/Reports -name '*.html' | sort | tail -1)"
 ```
-
-## 🤝 Contribuir
-
-1. Fork el proyecto
-2. Crea tu feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push al branch (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
 
 ## 📄 Licencia
 
