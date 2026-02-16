@@ -1,5 +1,8 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using WebDriverManager;
+using WebDriverManager.DriverConfigs.Impl;
+using WebDriverManager.Helpers;
 using System;
 
 namespace SeleniumFramework.Drivers
@@ -7,25 +10,27 @@ namespace SeleniumFramework.Drivers
     public class DriverManager
     {
         private static IWebDriver? _driver;
-
+        
         public static IWebDriver GetDriver()
         {
             if (_driver == null)
             {
+                // Automatically download and setup the correct ChromeDriver version
+                new WebDriverManager.DriverManager().SetUpDriver(
+                    new ChromeConfig(), 
+                    VersionResolveStrategy.MatchingBrowser
+                );
+                
                 var chromeOptions = new ChromeOptions();
                 chromeOptions.AddArgument("--start-maximized");
                 chromeOptions.AddArgument("--disable-search-engine-choice-screen");
                 
-                // Especificar la ruta del ChromeDriver
-                var service = ChromeDriverService.CreateDefaultService("/usr/local/bin");
-                
-                _driver = new ChromeDriver(service, chromeOptions);
+                _driver = new ChromeDriver(chromeOptions);
                 _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
             }
-
             return _driver;
         }
-
+        
         public static void QuitDriver()
         {
             if (_driver != null)
