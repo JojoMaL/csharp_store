@@ -106,4 +106,4 @@ open "$(find bin/Debug/net8.0/Reports -name '*.html' | sort | tail -1)"
 ```
 ## ✉️ Contacto
 
-Jose Mantecon Luengas  - mantecon_95@hotmail.com
+Jose Mantecon Luengas  - mantecon95@gmail.com
