@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using AventStack.ExtentReports.Model;
 using NUnit.Framework;
 using OpenQA.Selenium;
@@ -5,11 +6,11 @@ using selenium_tineda_csharp.Pages;
 using selenium_tineda_csharp.Tests;
 
 namespace selenium_tineda_csharp.Test
-{
+{ 
     public class Test_Login : BaseTest  
     {
         [Test]
-        [Category("Smoke")]
+        [AllureTag("Smoke")]
         [Description("Verificar si abre la pagina")]
         public void Test_AbrirTiendaOnline()
         {
@@ -26,7 +27,7 @@ namespace selenium_tineda_csharp.Test
 
 
         [Test]
-        [Category("Smoke")]
+        [AllureTag("Smoke")]
         [Description("Realiza login")]
         public void Test_login()
         {
@@ -46,7 +47,7 @@ namespace selenium_tineda_csharp.Test
 
 
         [Test]
-        [Category("Smoke")]
+        [AllureTag("Smoke")]
         [Description("Realiza login fallido")]
         public void Test_login_fallido()
         {
@@ -69,7 +70,7 @@ namespace selenium_tineda_csharp.Test
 
 
         [Test]
-        [Category("Smoke")]
+        [AllureTag("Smoke")]
         [Description("Verifica que el login con campos vacíos falle correctamente")]
     public void Test_LoginConCamposVacios_Fallido()
     {

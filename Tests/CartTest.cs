@@ -2,7 +2,7 @@ using NUnit.Framework;
 using OpenQA.Selenium;
 using selenium_tineda_csharp.Pages;
 using selenium_tineda_csharp.Tests;
-
+using Allure.NUnit.Attributes;
 namespace selenium_tineda_csharp.Test
 {
     public class Test_Cart : BaseTest
@@ -36,7 +36,7 @@ namespace selenium_tineda_csharp.Test
         // ========== TESTS EXISTENTES ==========
 
         [Test]
-        [Category("Smoke")]
+        [AllureTag("Smoke")]
         [Description("Agregar un producto al carrito")]
         public void Test_AgregarProducto_AlCarrito()
         {
@@ -56,7 +56,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Agregar varios productos al carrito")]
         public void Test_AgregarVariosProductos_AlCarrito()
         {
@@ -100,7 +100,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Eliminar un producto del carrito")]
         public void Test_EliminarProducto_DelCarrito()
         {
@@ -138,7 +138,7 @@ namespace selenium_tineda_csharp.Test
         // ========== TESTS NUEVOS ==========
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Actualizar la cantidad de un producto en el carrito")]
         public void Test_ActualizarCantidad_EnCarrito()
         {
@@ -177,7 +177,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Smoke")]
+        [AllureTag("Smoke")]
         [Description("Verificar que el carrito está vacío al inicio")]
         public void Test_CarritoVacio_AlInicio()
         {
@@ -204,7 +204,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Edge Case")]
+        [AllureTag("Edge Case")]
         [Description("Intentar actualizar cantidad a 0 (debería eliminar el producto o mostrar error)")]
         public void Test_ActualizarCantidadACero_EliminaProducto()
         {
@@ -308,7 +308,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Edge Case")]
+        [AllureTag("Edge Case")]
         [Description("Verificar cantidad mínima permitida en el carrito")]
         public void Test_CantidadMinima_NoPermiteCero()
         {
@@ -374,7 +374,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Verificar que el carrito mantiene el estado entre navegaciones")]
         public void Test_CarritoMantiene_EstadoEntreNavegaciones()
         {

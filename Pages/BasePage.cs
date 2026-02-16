@@ -257,9 +257,9 @@ namespace selenium_tineda_csharp.Pages
                 var wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(timeoutSeconds));
                 return wait.Until(driver =>
                 {
-                    return ((IJavaScriptExecutor)driver)
-                        .ExecuteScript("return document.readyState")
-                        .Equals("complete");
+                    var result = ((IJavaScriptExecutor)driver)
+                        .ExecuteScript("return document.readyState");
+                    return result?.Equals("complete") ?? false;
                 });
             }
             catch
@@ -280,8 +280,9 @@ namespace selenium_tineda_csharp.Pages
                 {
                     try
                     {
-                        var ajaxComplete = (bool)((IJavaScriptExecutor)driver)
+                        var result = ((IJavaScriptExecutor)driver)
                             .ExecuteScript("return jQuery.active == 0");
+                        var ajaxComplete = result != null && (bool)result;
                         return ajaxComplete;
                     }
                     catch

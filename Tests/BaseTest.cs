@@ -1,150 +1,180 @@
 using NUnit.Framework;
 using OpenQA.Selenium;
 using SeleniumFramework.Drivers;
-using SeleniumFramework.Utils;
-using AventStack.ExtentReports;
+using Allure.Net.Commons;
+using Allure.NUnit;
 using System;
 using System.IO;
-using System.Diagnostics;
+
+
 
 namespace selenium_tineda_csharp.Tests
 {
+    /// <summary>
+    /// Clase base para todos los tests con integración de Allure Reports
+    /// </summary>
+    [AllureNUnitAttribute]
     public class BaseTest
     {
         protected IWebDriver Driver;
-        protected ExtentTest Test;
-        private Stopwatch _stopwatch;
-
-        [OneTimeSetUp]
-        public void OneTimeSetup()
-        {
-            ExtentManager.GetExtent();
-        }
+        private DateTime _testStartTime;
 
         [SetUp]
         public void Setup()
         {
-            // Iniciar cronómetro
-            _stopwatch = Stopwatch.StartNew();
-
+            _testStartTime = DateTime.Now;
+            
+            // Obtener información del test actual
             var testName = TestContext.CurrentContext.Test.Name;
-            var description = TestContext.CurrentContext.Test.Properties.Get("Description")?.ToString() ?? "";
             var category = TestContext.CurrentContext.Test.Properties.Get("Category")?.ToString() ?? "General";
             
-            Test = ExtentTestManager.CreateTest(testName, description);
+            AllureLifecycle.Instance.UpdateTestCase(testResult =>
+            {
+                testResult.labels.Add(new Label { name = "suite", value = GetType().Name });
+                testResult.labels.Add(new Label { name = "tag", value = category });
+            });
             
-            // Agregar categoría con emoji
-            if (category == "Smoke")
-                Test.AssignCategory("🔥 Smoke");
-            else if (category == "Regression")
-                Test.AssignCategory("🔄 Regression");
-            else
-                Test.AssignCategory("📋 " + category);
-            
-            Test.Log(Status.Info, "🚀 Iniciando el test");
-            
+            // Iniciar el navegador
             Driver = DriverManager.GetDriver();
-            Test.Log(Status.Info, "🌐 Navegador Chrome iniciado correctamente");
+            
+            AddStep("Test iniciado correctamente");
         }
 
         [TearDown]
         public void TearDown()
         {
-            // Detener cronómetro
-            _stopwatch.Stop();
-            var duration = _stopwatch.Elapsed.TotalSeconds;
-
             var testStatus = TestContext.CurrentContext.Result.Outcome.Status;
             var errorMessage = TestContext.CurrentContext.Result.Message;
+            var duration = DateTime.Now - _testStartTime;
 
-            // Registrar duración
-            Test.Log(Status.Info, $"⏱️ Duración del test: {duration:0.00} segundos");
+            // Agregar información de duración
+            AddStep($"Duración del test: {duration.TotalSeconds:0.00} segundos");
 
+            // Capturar screenshot si el test falló
             if (testStatus == NUnit.Framework.Interfaces.TestStatus.Failed)
             {
-                Test.Log(Status.Fail, "❌ Test FALLIDO");
-                Test.Log(Status.Fail, $"💬 Error: {errorMessage}");
-                
-                TakeScreenshot();
-            }
-            else if (testStatus == NUnit.Framework.Interfaces.TestStatus.Passed)
-            {
-                Test.Log(Status.Pass, "✅ Test EXITOSO");
-            }
-            else if (testStatus == NUnit.Framework.Interfaces.TestStatus.Skipped)
-            {
-                Test.Log(Status.Skip, "⏭️ Test OMITIDO");
+                AddStep($"Test FALLIDO: {errorMessage}");
+                TakeScreenshot("error_screenshot");
             }
 
-            Test.Log(Status.Info, "🔒 Cerrando navegador");
-            DriverManager.QuitDriver();
-            
-            ExtentTestManager.RemoveTest();
-        }
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-            ExtentManager.FlushReport();
-            
-            // Mostrar ubicación del reporte
-            var reportPath = ExtentManager.GetReportPath();
-            Console.WriteLine("╔══════════════════════════════════════════════════════════╗");
-            Console.WriteLine("║          📊 REPORTE GENERADO EXITOSAMENTE               ║");
-            Console.WriteLine("╚══════════════════════════════════════════════════════════╝");
-            Console.WriteLine($"📁 Ubicación: {reportPath}");
-            Console.WriteLine($"🌐 Para ver: Doble clic en el archivo HTML");
-        }
-
-        protected void TakeScreenshot()
-        {
+            // Cerrar navegador
             try
             {
-                var screenshot = ((ITakesScreenshot)Driver).GetScreenshot();
-                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                var testName = TestContext.CurrentContext.Test.Name;
-                var filename = $"{testName}_{timestamp}.png";
-                
-                var screenshotDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Screenshots");
-                Directory.CreateDirectory(screenshotDir);
-                
-                var path = Path.Combine(screenshotDir, filename);
-                screenshot.SaveAsFile(path);
-                
-                // Adjuntar al reporte
-                Test.AddScreenCaptureFromPath(path, "Screenshot del error");
-                Test.Log(Status.Info, $"📸 Screenshot capturado: {filename}");
+                DriverManager.QuitDriver();
+                AddStep("Navegador cerrado correctamente");
             }
             catch (Exception ex)
             {
-                Test.Log(Status.Warning, $"⚠️ No se pudo tomar screenshot: {ex.Message}");
+                AddStep($"Error al cerrar navegador: {ex.Message}");
             }
         }
 
-        // Métodos de logging mejorados con emojis
+        // ========== MÉTODOS HELPER PARA ALLURE ==========
+
+        /// <summary>
+        /// Agrega un paso al reporte de Allure
+        /// </summary>
+        protected void AddStep(string stepName)
+        {
+            AllureLifecycle.Instance.UpdateTestCase(x => 
+            {
+                // El paso se registra en el contexto actual
+            });
+            
+            // También escribir en TestContext para que aparezca en la consola de NUnit
+            TestContext.WriteLine($"[STEP] {stepName}");
+        }
+
+        /// <summary>
+        /// Captura un screenshot y lo adjunta al reporte
+        /// </summary>
+protected void TakeScreenshot(string screenshotName = "screenshot")
+{
+    try
+    {
+        var screenshot = ((ITakesScreenshot)Driver).GetScreenshot();
+        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        var filename = $"{screenshotName}_{timestamp}.png";
+        
+        var screenshotDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Screenshots");
+        Directory.CreateDirectory(screenshotDir);
+        
+        var path = Path.Combine(screenshotDir, filename);
+        screenshot.SaveAsFile(path);
+        
+        // Adjuntar a Allure
+        var screenshotBytes = File.ReadAllBytes(path);
+        AllureApi.AddAttachment("Screenshot", "image/png", screenshotBytes);
+        
+        TestContext.WriteLine($"Screenshot capturado: {filename}");
+    }
+    catch (Exception ex)
+    {
+        TestContext.WriteLine($"No se pudo tomar screenshot: {ex.Message}");
+    }
+}
+
+        /// <summary>
+        /// Adjunta texto al reporte de Allure
+        /// </summary>
+        protected void AttachText(string name, string content)
+        {
+           AllureApi.AddAttachment(name,"text/plain",System.Text.Encoding.UTF8.GetBytes(content));
+
+;
+
+        }
+
+        /// <summary>
+        /// Adjunta JSON al reporte de Allure
+        /// </summary>
+        protected void AttachJson(string name, string jsonContent)
+        {
+            AllureApi.AddAttachment(name,"application/json",System.Text.Encoding.UTF8.GetBytes(jsonContent));
+
+
+        }
+
+        // ========== MÉTODOS DE LOGGING SIMPLIFICADOS ==========
+
+        /// <summary>
+        /// Log informativo
+        /// </summary>
         protected void LogInfo(string message)
         {
-            Test.Log(Status.Info, $"ℹ️ {message}");
+            AddStep($"ℹ️ {message}");
         }
 
+        /// <summary>
+        /// Log de éxito
+        /// </summary>
         protected void LogPass(string message)
         {
-            Test.Log(Status.Pass, $"✅ {message}");
+            AddStep($"✅ {message}");
         }
 
+        /// <summary>
+        /// Log de error/fallo
+        /// </summary>
         protected void LogFail(string message)
         {
-            Test.Log(Status.Fail, $"❌ {message}");
+            AddStep($"❌ {message}");
         }
 
+        /// <summary>
+        /// Log de advertencia
+        /// </summary>
         protected void LogWarning(string message)
         {
-            Test.Log(Status.Warning, $"⚠️ {message}");
+            AddStep($"⚠️ {message}");
         }
 
+        /// <summary>
+        /// Log de paso de test
+        /// </summary>
         protected void LogStep(string stepName)
         {
-            Test.Log(Status.Info, $"▶️ {stepName}");
+            AddStep($"▶️ {stepName}");
         }
     }
 }

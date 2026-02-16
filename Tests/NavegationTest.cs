@@ -3,6 +3,7 @@ using OpenQA.Selenium;
 using selenium_tineda_csharp.Pages;
 using selenium_tineda_csharp.Tests;
 using System.Linq;
+using Allure.NUnit.Attributes;
 
 namespace selenium_tineda_csharp.Test
 {
@@ -10,7 +11,7 @@ namespace selenium_tineda_csharp.Test
     public class Test_Navigation : BaseTest
     {
         [Test]
-        [Category("Smoke")]
+        [AllureTag("Smoke")]
         [Description("Navegar a diferentes categorías del menú")]
         public void Test_Navegar_ADiferentesCategorias()
         {
@@ -114,7 +115,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Usar breadcrumbs para navegar de vuelta")]
         public void Test_UsarBreadcrumbs_ParaNavegar()
         {
@@ -227,7 +228,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Verificar estructura de breadcrumbs en diferentes niveles")]
         public void Test_EstructuraBreadcrumbs_EnDiferentesNiveles()
         {
@@ -301,7 +302,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Navegar entre categorías sin volver al home")]
         public void Test_Navegar_EntreCategorias_Directamente()
         {

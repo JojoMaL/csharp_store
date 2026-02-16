@@ -5,9 +5,13 @@ using System.Linq;
 
 namespace selenium_tineda_csharp.Pages
 {
+    /// <summary>
+    /// Page Object para páginas de categorías
+    /// Versión refactorizada sin logging en consola
+    /// </summary>
     public class CategoryPage : BasePage
     {
-        // Locators
+        // ========== LOCATORS ==========
         private By _categoriesMenu = By.CssSelector("#top-menu .category");
         private By _categoryLinks = By.CssSelector("#top-menu .category a");
         private By _categoryTitle = By.CssSelector("h1.h1");
@@ -19,8 +23,11 @@ namespace selenium_tineda_csharp.Pages
 
         public CategoryPage(IWebDriver driver) : base(driver) { }
 
-        // ========== MÉTODOS DE WAIT ==========
+        // ========== WAIT METHODS ==========
 
+        /// <summary>
+        /// Espera a que la página de categoría cargue completamente
+        /// </summary>
         public void WaitForCategoryPageLoad()
         {
             WaitForPageLoad();
@@ -31,10 +38,10 @@ namespace selenium_tineda_csharp.Pages
             }
             catch
             {
-                // Si no hay título, verificar que al menos hay URL de categoría
+                // Si no hay título, verificar URL de categoría
                 if (!Driver.Url.Contains("id_category"))
                 {
-                    throw new Exception("No se pudo cargar la página de categoría");
+                    throw new InvalidOperationException("No se pudo cargar la página de categoría");
                 }
             }
             
@@ -43,59 +50,47 @@ namespace selenium_tineda_csharp.Pages
 
         // ========== NAVEGACIÓN ==========
 
+        /// <summary>
+        /// Navega a una categoría específica por nombre
+        /// </summary>
         public void GoToCategory(string categoryName)
         {
+            WaitForMinimumElements(_categoryLinks, 1, 10);
+            
+            var links = Driver.FindElements(_categoryLinks);
+            var categoryLink = links.FirstOrDefault(l => 
+                l.Displayed && 
+                l.Text.Trim().Equals(categoryName.Trim(), StringComparison.OrdinalIgnoreCase));
+            
+            if (categoryLink == null)
+            {
+                throw new InvalidOperationException($"Categoría no encontrada: {categoryName}");
+            }
+
+            ScrollToElement(By.LinkText(categoryName));
+            System.Threading.Thread.Sleep(500);
+            
+            // Intentar clic normal, si falla usar JavaScript
             try
             {
-                // Primero verificar que el menú esté visible
-                WaitForMinimumElements(_categoryLinks, 1, 10);
-                
-                var links = Driver.FindElements(_categoryLinks);
-                var categoryLink = links.FirstOrDefault(l => 
-                    l.Displayed && 
-                    l.Text.Trim().Equals(categoryName.Trim(), StringComparison.OrdinalIgnoreCase));
-                
-                if (categoryLink != null)
-                {
-                    // Hacer scroll al elemento
-                    ((IJavaScriptExecutor)Driver).ExecuteScript(
-                        "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", 
-                        categoryLink
-                    );
-                    
-                    System.Threading.Thread.Sleep(500);
-                    
-                    // Intentar clic normal primero
-                    try
-                    {
-                        WaitForElementToBeClickable(By.LinkText(categoryName));
-                        categoryLink.Click();
-                    }
-                    catch
-                    {
-                        // Si falla, usar JavaScript
-                        ((IJavaScriptExecutor)Driver).ExecuteScript("arguments[0].click();", categoryLink);
-                    }
-                    
-                    WaitForCategoryPageLoad();
-                }
-                else
-                {
-                    throw new Exception($"No se encontró la categoría visible: {categoryName}");
-                }
+                WaitForElementToBeClickable(By.LinkText(categoryName));
+                categoryLink.Click();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"⚠️ Error al navegar a categoría '{categoryName}': {ex.Message}");
-                throw;
+                ClickWithJavaScript(By.LinkText(categoryName));
             }
+            
+            WaitForCategoryPageLoad();
         }
 
+        /// <summary>
+        /// Obtiene lista de categorías disponibles
+        /// </summary>
         public List<string> GetAvailableCategories()
         {
             try
             {
-                // Esperar que al menos haya un link
                 WaitForMinimumElements(_categoryLinks, 1, 5);
                 
                 var links = Driver.FindElements(_categoryLinks);
@@ -114,6 +109,9 @@ namespace selenium_tineda_csharp.Pages
 
         // ========== INFORMACIÓN DE CATEGORÍA ==========
 
+        /// <summary>
+        /// Obtiene el título de la categoría actual
+        /// </summary>
         public string GetCategoryTitle()
         {
             try
@@ -123,7 +121,7 @@ namespace selenium_tineda_csharp.Pages
             }
             catch
             {
-                // Si no hay título H1, intentar obtener de breadcrumb activo
+                // Fallback: obtener de breadcrumb activo
                 try
                 {
                     var active = Driver.FindElement(_breadcrumbActive);
@@ -136,12 +134,18 @@ namespace selenium_tineda_csharp.Pages
             }
         }
 
+        /// <summary>
+        /// Verifica si está en una página de categoría
+        /// </summary>
         public bool IsOnCategoryPage()
         {
             return Driver.Url.Contains("id_category") || 
                    IsElementDisplayed(_categoryTitle, 5);
         }
 
+        /// <summary>
+        /// Obtiene la cantidad de productos en la categoría
+        /// </summary>
         public int GetProductCount()
         {
             try
@@ -155,92 +159,93 @@ namespace selenium_tineda_csharp.Pages
             }
         }
 
+        /// <summary>
+        /// Verifica si la categoría tiene productos
+        /// </summary>
         public bool HasProducts()
         {
             return GetProductCount() > 0;
         }
 
+        /// <summary>
+        /// Hace clic en un producto por índice
+        /// </summary>
         public void ClickProductByIndex(int index)
         {
+            WaitForMinimumElements(_productsInCategory, index + 1, 10);
+            var products = Driver.FindElements(_productsInCategory).ToList();
+            
+            if (index < 0 || index >= products.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index), 
+                    $"Índice fuera de rango. Índice: {index}, Total: {products.Count}");
+            }
+
+            var productElement = products[index];
+            
+            ScrollToElement(_productsInCategory);
+            System.Threading.Thread.Sleep(500);
+            
             try
             {
-                WaitForMinimumElements(_productsInCategory, index + 1, 10);
-                var products = Driver.FindElements(_productsInCategory).ToList();
-                
-                if (index >= 0 && index < products.Count)
-                {
-                    var productElement = products[index];
-                    
-                    // Scroll al producto
-                    ((IJavaScriptExecutor)Driver).ExecuteScript(
-                        "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", 
-                        productElement
-                    );
-                    
-                    System.Threading.Thread.Sleep(500);
-                    
-                    // Intentar clic
-                    try
-                    {
-                        WaitForElementToBeClickable(_productsInCategory);
-                        productElement.Click();
-                    }
-                    catch
-                    {
-                        // Usar JavaScript si falla
-                        ((IJavaScriptExecutor)Driver).ExecuteScript("arguments[0].click();", productElement);
-                    }
-                    
-                    WaitForPageLoad();
-                }
+                WaitForElementToBeClickable(_productsInCategory);
+                productElement.Click();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"⚠️ Error al hacer clic en producto {index}: {ex.Message}");
-                throw;
+                ((IJavaScriptExecutor)Driver).ExecuteScript("arguments[0].click();", productElement);
             }
+            
+            WaitForPageLoad();
         }
 
         // ========== BREADCRUMBS ==========
 
+        /// <summary>
+        /// Verifica si los breadcrumbs están visibles
+        /// </summary>
         public bool AreBreadcrumbsVisible()
         {
             return IsElementDisplayed(_breadcrumbs, 5);
         }
 
+        /// <summary>
+        /// Obtiene la lista de enlaces en breadcrumbs
+        /// </summary>
         public List<string> GetBreadcrumbLinks()
         {
-            List<string> list = new List<string>();
+            var list = new List<string>();
 
             try
             {
                 // Links clickeables
                 var links = Driver.FindElements(_breadcrumbLinks);
-                list.AddRange(links.Select(l => l.Text).Where(t => !string.IsNullOrWhiteSpace(t)));
+                list.AddRange(links
+                    .Select(l => l.Text)
+                    .Where(t => !string.IsNullOrWhiteSpace(t)));
 
                 // Breadcrumb actual (no es link)
-                try
+                var current = Driver.FindElements(_breadcrumbActive);
+                if (current.Count > 0)
                 {
-                    var current = Driver.FindElements(_breadcrumbActive);
-                    if (current.Count > 0)
+                    string currentText = current[0].Text;
+                    if (!string.IsNullOrWhiteSpace(currentText) && !list.Contains(currentText))
                     {
-                        string currentText = current[0].Text;
-                        if (!string.IsNullOrWhiteSpace(currentText) && !list.Contains(currentText))
-                        {
-                            list.Add(currentText);
-                        }
+                        list.Add(currentText);
                     }
                 }
-                catch { }
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"⚠️ Error al obtener breadcrumbs: {ex.Message}");
+                // Retornar lista vacía en caso de error
             }
 
             return list;
         }
 
+        /// <summary>
+        /// Obtiene el breadcrumb activo (actual)
+        /// </summary>
         public string GetActiveBreadcrumb()
         {
             try
@@ -254,50 +259,40 @@ namespace selenium_tineda_csharp.Pages
             }
         }
 
+        /// <summary>
+        /// Hace clic en un breadcrumb específico
+        /// </summary>
         public void ClickBreadcrumb(string breadcrumbText)
         {
+            WaitForMinimumElements(_breadcrumbLinks, 1);
+            var links = Driver.FindElements(_breadcrumbLinks);
+            var link = links.FirstOrDefault(l => 
+                l.Text.Equals(breadcrumbText, StringComparison.OrdinalIgnoreCase));
+            
+            if (link == null)
+            {
+                throw new InvalidOperationException($"Breadcrumb no encontrado: {breadcrumbText}");
+            }
+
+            ScrollToElement(By.LinkText(breadcrumbText));
+            System.Threading.Thread.Sleep(300);
+            
             try
             {
-                WaitForMinimumElements(_breadcrumbLinks, 1);
-                var links = Driver.FindElements(_breadcrumbLinks);
-                var link = links.FirstOrDefault(l => 
-                    l.Text.Equals(breadcrumbText, StringComparison.OrdinalIgnoreCase));
-                
-                if (link != null)
-                {
-                    // Scroll al breadcrumb
-                    ((IJavaScriptExecutor)Driver).ExecuteScript(
-                        "arguments[0].scrollIntoView(true);", 
-                        link
-                    );
-                    
-                    System.Threading.Thread.Sleep(300);
-                    
-                    // Intentar clic
-                    try
-                    {
-                        WaitForElementToBeClickable(By.LinkText(breadcrumbText));
-                        link.Click();
-                    }
-                    catch
-                    {
-                        ((IJavaScriptExecutor)Driver).ExecuteScript("arguments[0].click();", link);
-                    }
-                    
-                    WaitForPageLoad();
-                }
-                else
-                {
-                    throw new Exception($"No se encontró el breadcrumb: {breadcrumbText}");
-                }
+                WaitForElementToBeClickable(By.LinkText(breadcrumbText));
+                link.Click();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"⚠️ Error al hacer clic en breadcrumb: {ex.Message}");
-                throw;
+                ClickWithJavaScript(By.LinkText(breadcrumbText));
             }
+            
+            WaitForPageLoad();
         }
 
+        /// <summary>
+        /// Navega al home usando breadcrumbs
+        /// </summary>
         public void GoToHomeViaBreadcrumb()
         {
             try
@@ -322,6 +317,9 @@ namespace selenium_tineda_csharp.Pages
             }
         }
 
+        /// <summary>
+        /// Verifica si los breadcrumbs contienen un texto específico
+        /// </summary>
         public bool BreadcrumbContains(string categoryName)
         {
             var breadcrumbs = GetBreadcrumbLinks();
@@ -329,6 +327,9 @@ namespace selenium_tineda_csharp.Pages
                 b.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Obtiene la cantidad de elementos en breadcrumbs
+        /// </summary>
         public int GetBreadcrumbCount()
         {
             try

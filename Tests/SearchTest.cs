@@ -2,6 +2,10 @@ using NUnit.Framework;
 using OpenQA.Selenium;
 using selenium_tineda_csharp.Pages;
 using selenium_tineda_csharp.Tests;
+using Allure.Net.Commons;
+using Allure.Net.Commons.Steps;
+using Allure.NUnit.Attributes;
+
 
 namespace selenium_tineda_csharp.Test
 {
@@ -9,7 +13,7 @@ namespace selenium_tineda_csharp.Test
     public class Test_Search : BaseTest
     {
         [Test]
-        [Category("Smoke")]
+        [AllureTag("Smoke")]
         [Description("Buscar un producto existente y verificar resultados")]
         public void Test_BuscarProducto_Existente()
         {
@@ -47,7 +51,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Buscar un producto inexistente y verificar mensaje")]
         public void Test_BuscarProducto_Inexistente()
         {
@@ -97,7 +101,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Edge Case")]
+        [AllureTag("Edge Case")]
         [Description("Intentar búsqueda vacía y verificar comportamiento")]
         public void Test_BusquedaVacia_Comportamiento()
         {
@@ -153,7 +157,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Buscar producto y navegar al detalle desde resultados")]
         public void Test_BuscarYNavegar_AlDetalle()
         {
@@ -259,7 +263,7 @@ namespace selenium_tineda_csharp.Test
         }
 
         [Test]
-        [Category("Functional")]
+        [AllureTag("Functional")]
         [Description("Realizar múltiples búsquedas consecutivas")]
         public void Test_MultipleBusquedas_Consecutivas()
         {
