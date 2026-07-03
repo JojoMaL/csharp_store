@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using OpenQA.Selenium;
 using SeleniumFramework.Drivers;
+using SeleniumFramework.Utils;
 using Allure.Net.Commons;
 using Allure.NUnit;
 using System;
@@ -33,6 +34,9 @@ namespace selenium_tineda_csharp.Tests
                 testResult.labels.Add(new Label { name = "suite", value = GetType().Name });
                 testResult.labels.Add(new Label { name = "tag", value = category });
             });
+
+            // Registrar el test en el reporte HTML de ExtentReports
+            ExtentTestManager.CreateTest(testName, $"Suite: {GetType().Name} | Categoría: {category}");
             
             // Iniciar el navegador
             Driver = DriverManager.GetDriver();
@@ -54,7 +58,12 @@ namespace selenium_tineda_csharp.Tests
             if (testStatus == NUnit.Framework.Interfaces.TestStatus.Failed)
             {
                 AddStep($"Test FALLIDO: {errorMessage}");
+                LogFail($"{errorMessage}");
                 TakeScreenshot("error_screenshot");
+            }
+            else if (testStatus == NUnit.Framework.Interfaces.TestStatus.Passed)
+            {
+                ExtentTestManager.LogSuccess("Test finalizado correctamente");
             }
 
             // Cerrar navegador
@@ -66,6 +75,11 @@ namespace selenium_tineda_csharp.Tests
             catch (Exception ex)
             {
                 AddStep($"Error al cerrar navegador: {ex.Message}");
+            }
+            finally
+            {
+                // Liberar la referencia del test en ExtentReports para este hilo
+                ExtentTestManager.RemoveTest();
             }
         }
 
@@ -83,6 +97,9 @@ namespace selenium_tineda_csharp.Tests
             
             // También escribir en TestContext para que aparezca en la consola de NUnit
             TestContext.WriteLine($"[STEP] {stepName}");
+
+            // Y en el reporte HTML de ExtentReports
+            ExtentTestManager.LogStep(stepName);
         }
 
         /// <summary>
@@ -105,6 +122,9 @@ protected void TakeScreenshot(string screenshotName = "screenshot")
         // Adjuntar a Allure
         var screenshotBytes = File.ReadAllBytes(path);
         AllureApi.AddAttachment("Screenshot", "image/png", screenshotBytes);
+
+        // Adjuntar al reporte HTML de ExtentReports
+        ExtentTestManager.GetTest()?.AddScreenCaptureFromPath(path, screenshotName);
         
         TestContext.WriteLine($"Screenshot capturado: {filename}");
     }
@@ -151,6 +171,7 @@ protected void TakeScreenshot(string screenshotName = "screenshot")
         protected void LogPass(string message)
         {
             AddStep($"✅ {message}");
+            ExtentTestManager.LogSuccess(message);
         }
 
         /// <summary>
@@ -159,6 +180,7 @@ protected void TakeScreenshot(string screenshotName = "screenshot")
         protected void LogFail(string message)
         {
             AddStep($"❌ {message}");
+            ExtentTestManager.LogError(message);
         }
 
         /// <summary>
@@ -167,6 +189,7 @@ protected void TakeScreenshot(string screenshotName = "screenshot")
         protected void LogWarning(string message)
         {
             AddStep($"⚠️ {message}");
+            ExtentTestManager.LogWarning(message);
         }
 
         /// <summary>
