@@ -1,4 +1,4 @@
 {
-  "baseUrl": "https://www.google.com",
+  "baseUrl": "https://teststore.automationtesting.co.uk/index.php",
   "browser": "chrome"
 }
