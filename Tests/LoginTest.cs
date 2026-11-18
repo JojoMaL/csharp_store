@@ -57,7 +57,7 @@ namespace selenium_tineda_csharp.Test
         loginPage.GoToLoginPage("https://teststore.automationtesting.co.uk/index.php?controller=authentication&back=https%3A%2F%2Fteststore.automationtesting.co.uk%2Findex.php");
 
         LogInfo("Ingresando credenciales incorrectas");
-        loginPage.Login("mantecon_95@hotmail.com", "elvato123");
+        loginPage.Login("fake@example.com", "WrongPass123");
 
         LogInfo("Validando que NO se inició sesión");
         Assert.IsFalse(loginPage.IsLoggedIn(), "El usuario NO debería estar logueado.");
