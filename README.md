@@ -58,7 +58,7 @@ Editá `config.json` para apuntar a otro ambiente o navegador:
 
 ```json
 {
-  "baseUrl": "https://www.google.com",
+  "baseUrl": "https://teststore.automationtesting.co.uk/index.php",
   "browser": "chrome"
 }
 ```
