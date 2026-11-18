@@ -28,3 +28,6 @@ obj/
 
 # User files
 *.user
+
+allure-report/
+allure-results/
